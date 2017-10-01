@@ -14,31 +14,31 @@ class TimerTests: XCTestCase {
     func testStart()
     {
         var timesCalled = 0
-        let expectation = self.expectationWithDescription("timer was called")
+        let expectation = self.expectation(description: "timer was called")
         let timeStarted = NSDate()
         var timeFired: NSDate? = nil
 
-        let timer = Timer(milliseconds: 100, repeats: 0, queue: dispatch_get_main_queue(),
+        let timer = Timer(milliseconds: 100, repeats: 0, queue: DispatchQueue.main,
         {
             timer in
 
             timeFired = NSDate()
-            ++timesCalled
+            timesCalled+=1
             expectation.fulfill()
         })
 
         XCTAssertNotNil(timer, "timer is nil")
         XCTAssertTrue(timer!.start(), "timer failed to start")
 
-        self.waitForExpectationsWithTimeout(1.0, handler: nil)
+        self.waitForExpectations(timeout: 1.0, handler: nil)
 
         XCTAssertEqual(timesCalled, 1, "timer didn't fire")
         XCTAssertNotNil(timeFired, "timeFired is nil")
-        XCTAssertEqual(timer!.state, TimerState.Stopped, "timer is still running")
+        XCTAssertEqual(timer!.state, TimerState.stopped, "timer is still running")
         XCTAssertEqualWithAccuracy(
-            timeFired!.timeIntervalSinceDate(timeStarted),
+            timeFired!.timeIntervalSince(timeStarted as Date),
             0.1,
-            0.05,
+            accuracy: 0.05,
             "timer called at wrong time"
         )
     }
@@ -46,13 +46,13 @@ class TimerTests: XCTestCase {
     func testMultipleStarts()
     {
         var timesCalled = 0
-        let expectation = self.expectationWithDescription("timer was called")
+        let expectation = self.expectation(description: "timer was called")
 
-        let timer = Timer(milliseconds: 200, repeats: 0, queue: dispatch_get_main_queue(),
+        let timer = Timer(milliseconds: 200, repeats: 0, queue: DispatchQueue.main,
         {
             timer in
 
-            ++timesCalled
+            timesCalled+=1
             expectation.fulfill()
         })
 
@@ -60,39 +60,39 @@ class TimerTests: XCTestCase {
         XCTAssertTrue(timer!.start(), "timer failed to start")
         XCTAssertFalse(timer!.start(), "start() successfully called twice in a row")
 
-        self.waitForExpectationsWithTimeout(1.0, handler: nil)
+        self.waitForExpectations(timeout: 1.0, handler: nil)
 
         XCTAssertEqual(timesCalled, 1, "timer didn't fire")
-        XCTAssertEqual(timer!.state, TimerState.Stopped, "timer is still running")
+        XCTAssertEqual(timer!.state, TimerState.stopped, "timer is still running")
     }
 
     func testMultipleTimers()
     {
-        let expectation1 = self.expectationWithDescription("timer1 was called")
-        let expectation2 = self.expectationWithDescription("timer2 was called")
-        let expectation3 = self.expectationWithDescription("timer3 was called")
+        let expectation1 = self.expectation(description: "timer1 was called")
+        let expectation2 = self.expectation(description: "timer2 was called")
+        let expectation3 = self.expectation(description: "timer3 was called")
 
-        let timer1 = Timer(milliseconds: 100, repeats: 0, queue: dispatch_get_main_queue(),
+        let timer1 = Timer(milliseconds: 100, repeats: 0, queue: DispatchQueue.main,
         {
             timer in
 
             expectation1.fulfill()
         })
 
-        let timer2 = Timer(milliseconds: 150, repeats: 0, queue: dispatch_get_main_queue(),
+        let timer2 = Timer(milliseconds: 150, repeats: 0, queue: DispatchQueue.main,
         {
             timer in
 
-            XCTAssertEqual(timer1!.state, TimerState.Stopped, "timer1 is still running")
+            XCTAssertEqual(timer1!.state, TimerState.stopped, "timer1 is still running")
             expectation2.fulfill()
         })
 
-        let timer3 = Timer(milliseconds: 200,  repeats: 0, queue: dispatch_get_main_queue(),
+        let timer3 = Timer(milliseconds: 200,  repeats: 0, queue: DispatchQueue.main,
         {
             timer in
 
-            XCTAssertEqual(timer1!.state, TimerState.Stopped, "timer1 is still running")
-            XCTAssertEqual(timer2!.state, TimerState.Stopped, "timer2 is still running")
+            XCTAssertEqual(timer1!.state, TimerState.stopped, "timer1 is still running")
+            XCTAssertEqual(timer2!.state, TimerState.stopped, "timer2 is still running")
             expectation3.fulfill()
         })
 
@@ -104,23 +104,23 @@ class TimerTests: XCTestCase {
         XCTAssertTrue(timer2!.start(), "timer2 failed to start")
         XCTAssertTrue(timer3!.start(), "timer3 failed to start")
 
-        self.waitForExpectationsWithTimeout(1.0, handler: nil)
+        self.waitForExpectations(timeout: 1.0, handler: nil)
 
-        XCTAssertEqual(timer1!.state, TimerState.Stopped, "timer1 is still running")
-        XCTAssertEqual(timer2!.state, TimerState.Stopped, "timer2 is still running")
-        XCTAssertEqual(timer3!.state, TimerState.Stopped, "timer3 is still running")
+        XCTAssertEqual(timer1!.state, TimerState.stopped, "timer1 is still running")
+        XCTAssertEqual(timer2!.state, TimerState.stopped, "timer2 is still running")
+        XCTAssertEqual(timer3!.state, TimerState.stopped, "timer3 is still running")
     }
 
     func testRepeat()
     {
         var timesCalled = 0
-        let expectation = self.expectationWithDescription("timer was called")
+        let expectation = self.expectation(description: "timer was called")
 
-        let timer = Timer(milliseconds: 100, repeats: 3, queue: dispatch_get_main_queue(),
+        let timer = Timer(milliseconds: 10, repeats: 3, queue: DispatchQueue.main,
         {
             timer in
 
-            ++timesCalled
+            timesCalled+=1
 
             if timesCalled == 3
             {
@@ -131,22 +131,22 @@ class TimerTests: XCTestCase {
         XCTAssertNotNil(timer, "timer is nil")
         XCTAssertTrue(timer!.start(), "timer failed to start")
 
-        self.waitForExpectationsWithTimeout(1.0, handler: nil)
+        self.waitForExpectations(timeout: 10.0, handler: nil)
 
         XCTAssertEqual(timesCalled, 3, "timer didn't fire enough times")
-        XCTAssertEqual(timer!.state, TimerState.Stopped, "timer is still running")
+        XCTAssertEqual(timer!.state, TimerState.stopped, "timer is still running")
     }
 
     func testRepeatIndefinitely()
     {
         var timesCalled = 0
-        let expectation = self.expectationWithDescription("timer was called")
+        let expectation = self.expectation(description: "timer was called")
 
-        let timer = Timer(milliseconds: 100, repeats: -1, queue: dispatch_get_main_queue(),
+        let timer = Timer(milliseconds: 100, repeats: -1, queue: DispatchQueue.main,
         {
             timer in
 
-            ++timesCalled
+            timesCalled += 1
 
             if timesCalled == 3
             {
@@ -158,25 +158,25 @@ class TimerTests: XCTestCase {
         XCTAssertNotNil(timer, "timer is nil")
         XCTAssertTrue(timer!.start(), "timer failed to start")
 
-        self.waitForExpectationsWithTimeout(1.0, handler: nil)
+        self.waitForExpectations(timeout: 1.0, handler: nil)
 
         XCTAssertEqual(timesCalled, 3, "timer didn't fire enough times")
-        XCTAssertEqual(timer!.state, TimerState.Stopped, "timer is still running")
+        XCTAssertEqual(timer!.state, TimerState.stopped, "timer is still running")
     }
 
     func testPause()
     {
         var timesCalled = 0
-        let expectation = self.expectationWithDescription("timer was called")
+        let expectation = self.expectation(description: "timer was called")
         let timeStarted = NSDate()
         var timeFired: NSDate? = nil
 
-        let timer = Timer(seconds: 4, repeats: 0, queue: dispatch_get_main_queue(),
+        let timer = Timer(seconds: 4, repeats: 0, queue: DispatchQueue.main,
         {
             timer in
 
             timeFired = NSDate()
-            ++timesCalled
+            timesCalled += 1
             expectation.fulfill()
         })
 
@@ -196,15 +196,16 @@ class TimerTests: XCTestCase {
 
         XCTAssertTrue(timer!.start(), "timer failed to start")
 
-        self.waitForExpectationsWithTimeout(10.0, handler: nil)
+        self.waitForExpectations(timeout: 10.0, handler: nil)
 
         XCTAssertEqual(timesCalled, 1, "timer didn't fire")
         XCTAssertNotNil(timeFired, "timeFired is nil")
-        XCTAssertEqual(timer!.state, TimerState.Stopped, "timer is still running")
+        XCTAssertEqual(timer!.state, TimerState.stopped, "timer is still running")
+//        XCTAssertEqualWithAccuracy(τ_0_0, τ_0_0, accuracy: τ_0_0, String)
         XCTAssertEqualWithAccuracy(
-            timeFired!.timeIntervalSinceDate(timeStarted),
+            timeFired!.timeIntervalSince(timeStarted as Date),
             6.0,
-            0.1,
+            accuracy: 0.1,
             "timer called at wrong time"
         )
     }
@@ -213,36 +214,36 @@ class TimerTests: XCTestCase {
     {
         var timesCalled = 0;
 
-        let timer = Timer(seconds: 1, repeats: 0, queue: dispatch_get_main_queue(),
+        let timer = Timer(seconds: 1, repeats: 0, queue: DispatchQueue.main,
         {
             timer in
 
-            ++timesCalled
+            timesCalled+=1
         })
 
         XCTAssertNotNil(timer, "timer is nil")
         XCTAssertTrue(timer!.start(), "timer failed to start")
 
-        XCTAssertEqual(timer!.state, TimerState.Running, "timer is not running")
+        XCTAssertEqual(timer!.state, TimerState.running, "timer is not running")
 
         timer!.stop()
 
-        NSRunLoop.mainRunLoop().runUntilDate(NSDate().dateByAddingTimeInterval(2.0))
+        RunLoop.main.run(until: NSDate().addingTimeInterval(2.0) as Date)
 
         XCTAssertEqual(timesCalled, 0, "timer fired after stopping")
-        XCTAssertEqual(timer!.state, TimerState.Stopped, "timer is still running")
+        XCTAssertEqual(timer!.state, TimerState.stopped, "timer is still running")
     }
 
     func testARC()
     {
         var timesCalled = 0
-        let expectation = self.expectationWithDescription("timer was called")
+        let expectation = self.expectation(description: "timer was called")
 
-        let timer = Timer(seconds: 1, repeats: 0, queue: dispatch_get_main_queue(),
+        let timer = Timer(seconds: 1, repeats: 0, queue: DispatchQueue.main,
         {
             timer in
 
-            ++timesCalled
+            timesCalled += 1
             expectation.fulfill()
         })
 
@@ -252,7 +253,7 @@ class TimerTests: XCTestCase {
         // Don't reference timer below this point. ARC should release it here,
         // but it won't be deallocated until it finishes.
 
-        self.waitForExpectationsWithTimeout(2.0, handler: nil)
+        self.waitForExpectations(timeout: 2.0, handler: nil)
 
         XCTAssertEqual(timesCalled, 1, "timer didn't fire")
         
